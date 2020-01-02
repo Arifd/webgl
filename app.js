@@ -77,7 +77,7 @@ async function initWebGL()
   // send the buffer to the GPU
   let vertexBufferObject = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject); 
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(quadVertices), gl.DYNAMIC_DRAW); // gl.STATIC_DRAW for set once and never update
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(quadVertices), gl.STATIC_DRAW);
 
   // tell the GPU how the buffer's structured and where to point its attribute variables
   let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
