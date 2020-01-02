@@ -4,7 +4,7 @@
 
 let vertexShaderString =
 `
-precision lowp float;
+precision mediump float;
 attribute vec2 vertPosition;
 
 void main()
