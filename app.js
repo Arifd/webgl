@@ -50,10 +50,7 @@ async function initWebGL()
     gl.deleteShader(shader);
   }
 
-  let vertexShader = createShader("vertex", vertexShaderString);
-  let fragmentShader = createShader("fragment", fragmentShaderString);
-
-  function createProgram(name = "")
+  function createProgram(vertexShader, fragmentShader, name = "")
   {
     let program = gl.createProgram();
     gl.attachShader(program, vertexShader);
@@ -71,9 +68,14 @@ async function initWebGL()
     //  console.error('error validating program', gl.getProgramInfoLog(program));
   }
 
-  let program = createProgram();
+  let vertexShader = createShader("vertex", vertexShaderString);
+  let fragmentShader = createShader("fragment", fragmentShaderString);
+  // above 2 variables won't be referenced anymore in the code, but the program below will.
+  let program = createProgram(vertexShader, fragmentShader);
 
   // ---------------------------------------
+  
+  // Now  that we've created our program, we need to supply data to it
 
   //
   // setup and send buffer
