@@ -61,22 +61,36 @@ async function initWebGL()
   //
 
   // Create a buffer
+  // let quadVertices = // X,Y positions
+  // [
+  //           // First triangle:
+  //            1.0,  1.0,
+  //           -1.0,  1.0,
+  //           -1.0, -1.0,
+  //           // Second triangle:
+  //           -1.0, -1.0,
+  //            1.0, -1.0,
+  //            1.0,  1.0
+  // ];
+
   let quadVertices = // X,Y positions
   [
-            // First triangle:
-             1.0,  1.0,
-            -1.0,  1.0,
-            -1.0, -1.0,
-            // Second triangle:
-            -1.0, -1.0,
-             1.0, -1.0,
-             1.0,  1.0
+    -1.0, -1.0,
+    1.0, -1.0,
+    1.0, 1.0,
+    -1.0, 1.0,
   ];
 
-  // send the buffer to the GPU
+  let quadIndices = [0, 1, 2, 2, 3, 0];
+
+  // send the vertex & indices buffers to the GPU
   let vertexBufferObject = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject); 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(quadVertices), gl.STATIC_DRAW);
+
+  let indexBufferObject = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObject);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(quadIndices), gl.STATIC_DRAW);
 
   // tell the GPU how the buffer's structured and where to point its attribute variables
   let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
@@ -117,7 +131,7 @@ async function initWebGL()
   {
     gl.uniform1f(iTimeUniformLocation, fakeTime);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 6); // draw type, how many to skip, number of vertices
+    gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     fakeTime += 0.01;
     requestAnimationFrame(draw);
   }
