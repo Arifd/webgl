@@ -35,7 +35,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     wave_color += vec3(wave_width * 1.9, wave_width, wave_width * 1.5);
   }
   
-  final_color = bg_color + wave_color;
+  final_color = bg_color;// + wave_color;
   
   
   fragColor = vec4(final_color, 1.0);

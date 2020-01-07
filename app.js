@@ -24,35 +24,54 @@ async function initWebGL()
   canvas.height = window.innerHeight;
   let gl = canvas.getContext('webgl2');
 
+  // set a unique background colour if all else fails!
   gl.clearColor(0.75, 0.85, 0.8, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-  gl.shaderSource(vertexShader, vertexShaderString);
-  gl.shaderSource(fragmentShader, fragmentShaderString);
-
-  function compileShader(shader)
+  function createShader(type, source, name = "")
   {
+    // type: either "vertex", "fragment"
+    if (!name) name = type;
+    // create shader
+    let shader;
+    if (type === "vertex") shader = gl.createShader(gl.VERTEX_SHADER);
+    else if (type === "fragment") shader = gl.createShader(gl.FRAGMENT_SHADER);
+    else console.log("createShader() error: error in type");
+    // set source
+    gl.shaderSource(shader, source);
+    // compile
     gl.compileShader(shader);
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS))
-      console.error('error compiling shader', gl.getShaderInfoLog(shader));
+    
+    let compileStatus = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if (compileStatus) return shader;
+    
+    // if we didn't already return, there was an error.
+    console.error(`ERROR compiling ${name} shader:`, gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
   }
 
-  compileShader(vertexShader);
-  compileShader(fragmentShader);
+  let vertexShader = createShader("vertex", vertexShaderString);
+  let fragmentShader = createShader("fragment", fragmentShaderString);
 
-  let program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-    console.error('error linking program', gl.getProgramInfoLog(program));
+  function createProgram(name = "")
+  {
+    let program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
 
-  gl.validateProgram(program);
-  if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS))
-      console.error('error validating program', gl.getProgramInfoLog(program));
+    let status = gl.getProgramParameter(program, gl.LINK_STATUS);
+    if (status) return program;
+
+    console.error(`error linking ${name + " "}program`, gl.getProgramInfoLog(program));
+
+    // if we are successful until here, is a further validation step really necessary?
+    // gl.validateProgram(program);
+    // if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS))
+    //  console.error('error validating program', gl.getProgramInfoLog(program));
+  }
+
+  let program = createProgram();
 
   // ---------------------------------------
 
@@ -60,19 +79,7 @@ async function initWebGL()
   // setup and send buffer
   //
 
-  // Create a buffer
-  // let quadVertices = // X,Y positions
-  // [
-  //           // First triangle:
-  //            1.0,  1.0,
-  //           -1.0,  1.0,
-  //           -1.0, -1.0,
-  //           // Second triangle:
-  //           -1.0, -1.0,
-  //            1.0, -1.0,
-  //            1.0,  1.0
-  // ];
-
+  // Create a vertex buffer
   let quadVertices = // X,Y positions
   [
     -1.0, -1.0,
@@ -110,7 +117,7 @@ async function initWebGL()
   // communicate uniform variables to the GPU
   //
 
-  // Uniforms are bound to  program, so we have to tell OpenGL state machine which program is active
+  // Uniforms are bound to program, so we have to tell OpenGL state machine which program is active
   gl.useProgram(program);
 
   // get pointers
