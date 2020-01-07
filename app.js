@@ -3,15 +3,14 @@
 "use strict";
 
 let vertexShaderString =
-`
+`#version 300 es
 precision mediump float;
-attribute vec2 vertPosition;
+in vec2 vertPosition;
 
 void main()
 {
   gl_Position = vec4(vertPosition, 0.0, 1.0);
-}
-`;
+}`;
 
 let fragmentShaderString = "";
 
@@ -23,7 +22,7 @@ async function initWebGL()
   let canvas = document.getElementById('maincanvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  let gl = canvas.getContext('webgl');
+  let gl = canvas.getContext('webgl2');
 
   gl.clearColor(0.75, 0.85, 0.8, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

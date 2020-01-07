@@ -1,6 +1,10 @@
+#version 300 es 
+
 precision mediump float;
 uniform vec3 iResolution;
 uniform float iTime;
+
+out vec4 outColour;
 
 vec3 COLOR1 = vec3(0.0, 0.0, 0.3);
 vec3 COLOR2 = vec3(0.5, 0.0, 0.0);
@@ -38,5 +42,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 }
 
 void main() {
-  mainImage(gl_FragColor, gl_FragCoord.xy);
+  mainImage(outColour, gl_FragCoord.xy);
 }
