@@ -139,6 +139,8 @@ async function initWebGL()
   let frameCount = 0;
   const fpsElem = document.querySelector("#fps"); // fps counter
   let then = 0.0; // fps counter
+  let fpsArray = [];
+  let fpsAvgNum = 50;
   function draw(now)
   {
     gl.uniform1f(u_frameCountUniformLocation, frameCount);
@@ -151,8 +153,14 @@ async function initWebGL()
     const deltaTime = now - then;          // compute time since last frame
     then = now;                            // remember time for next frame
     const fps = 1 / deltaTime;             // compute frames per second
-    fpsElem.textContent = fps.toFixed(1);  // update fps display
-    ////////// Display frameRate
+    fpsArray.push(fps);                    // add to array to generate average
+    if ((frameCount % fpsAvgNum) === 0) 
+    {
+      let fpsAvg = fpsArray.reduce((previous, current) => current += previous) / fpsArray.length; // count average
+      fpsElem.textContent = fpsAvg.toFixed(1);  // update fps display
+      fpsArray.length = 0; // clear the array
+    }
+    ////////// end: Display frameRate
 
     requestAnimationFrame(draw);
   }
