@@ -123,25 +123,36 @@ async function initWebGL()
   gl.useProgram(program);
 
   // get pointers
-  let iTimeUniformLocation = gl.getUniformLocation(program, 'iTime');
-  let iResolutionUniformLocation = gl.getUniformLocation(program, 'iResolution');
+  let u_timeUniformLocation = gl.getUniformLocation(program, 'u_time');
+  let u_resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
 
   // // use the appropriate function to send datatype data
   // // more info: https://stackoverflow.com/questions/31049910/setting-uniforms-in-webgl
-  gl.uniform1f(iTimeUniformLocation, 0.0);
-  gl.uniform3fv(iResolutionUniformLocation, [canvas.width, canvas.height, 1]);
+  gl.uniform1f(u_timeUniformLocation, 0.0);
+  gl.uniform2f(u_resolutionUniformLocation, canvas.width, canvas.height);
 
 
   //
   // Main render loop
   //
   let fakeTime = 0;
-  function draw()
+  const fpsElem = document.querySelector("#fps"); // fps counter
+  let then = 0.0; // fps counter
+  function draw(now)
   {
-    gl.uniform1f(iTimeUniformLocation, fakeTime);
+    gl.uniform1f(u_timeUniformLocation, fakeTime);
 
     gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     fakeTime += 0.01;
+
+    ////////// Display frameRate
+    now *= 0.001;                          // convert to seconds
+    const deltaTime = now - then;          // compute time since last frame
+    then = now;                            // remember time for next frame
+    const fps = 1 / deltaTime;             // compute frames per second
+    fpsElem.textContent = fps.toFixed(1);  // update fps display
+    ////////// Display frameRate
+
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
