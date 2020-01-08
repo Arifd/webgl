@@ -3,6 +3,7 @@
 precision mediump float;
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform float u_frameCount;
 
 out vec4 outColour;
 
@@ -83,13 +84,14 @@ float snoise(vec2 v)
 ///////////////////////////////
 
 float N21(vec2 p) {
-  return fract(sin(p.x*100.+p.y*6574.)*5647.);
+  return fract(sin(p.x*100.0+p.y*6574.0)*5647.0);
 }
 
 void main() {
   vec2 st = gl_FragCoord.xy/u_resolution;
 
-  st.y -= u_time / 10.0;
+  st.y -= u_frameCount / 1000.0;
+  // st.x += sin(u_frameCount/10.0) / 100.0;
 
   float c = 0.0;
 
@@ -102,8 +104,8 @@ void main() {
   }
   c /= num/3.0;
   
-  vec3 colour = vec3(c);
-  //vec3 colour = vec3(smoothstep(0.0,1.0, pow(c,2.0)),smoothstep(0.0,2.0,pow(c,8.0)), 0.0);
+  // vec3 colour = vec3(c);
+  vec3 colour = vec3(smoothstep(0.0,1.0, pow(c,2.0)),smoothstep(0.0,2.0,pow(c,8.0)), 0.0);
 
   outColour = vec4(colour,1.0);
 }

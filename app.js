@@ -125,6 +125,7 @@ async function initWebGL()
   // get pointers
   let u_timeUniformLocation = gl.getUniformLocation(program, 'u_time');
   let u_resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+  let u_frameCountUniformLocation = gl.getUniformLocation(program, 'u_frameCount');
 
   // // use the appropriate function to send datatype data
   // // more info: https://stackoverflow.com/questions/31049910/setting-uniforms-in-webgl
@@ -135,15 +136,15 @@ async function initWebGL()
   //
   // Main render loop
   //
-  let fakeTime = 0;
+  let frameCount = 0;
   const fpsElem = document.querySelector("#fps"); // fps counter
   let then = 0.0; // fps counter
   function draw(now)
   {
-    gl.uniform1f(u_timeUniformLocation, fakeTime);
+    gl.uniform1f(u_frameCountUniformLocation, frameCount);
 
     gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
-    fakeTime += 0.01;
+    frameCount++;
 
     ////////// Display frameRate
     now *= 0.001;                          // convert to seconds
