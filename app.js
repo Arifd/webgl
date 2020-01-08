@@ -4,7 +4,7 @@
 
 let vertexShaderString =
 `#version 300 es
-precision mediump float;
+precision highp float;
 in vec2 vertPosition;
 
 void main()
@@ -20,8 +20,20 @@ async function initWebGL()
   await fetch('shader.frag').then(response => response.text()).then(data => fragmentShaderString = data);
  
   let canvas = document.getElementById('maincanvas');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  function resize(canvas)
+  {
+    // Lookup the size the browser is displaying the canvas.
+    var displayWidth  = canvas.clientWidth;
+    var displayHeight = canvas.clientHeight;
+    // Check if the canvas is not the same size.
+    if (canvas.width  !== displayWidth || canvas.height !== displayHeight)
+    {
+      // Make the canvas the same size
+      canvas.width  = displayWidth;
+      canvas.height = displayHeight;
+    }
+  }
+  resize(canvas);
   let gl = canvas.getContext('webgl2');
 
   // set a unique background colour if all else fails!
@@ -144,6 +156,7 @@ async function initWebGL()
   function draw(now)
   {
     gl.uniform1f(u_frameCountUniformLocation, frameCount);
+    gl.uniform1f(u_timeUniformLocation, performance.now());
 
     gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     frameCount++;
