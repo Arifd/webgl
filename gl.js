@@ -30,9 +30,14 @@ class GLInstance
   //Set the size of the canvas html element and the rendering view port
   setSize()
   {
-    // Lookup the size the browser is displaying the canvas.
-    let displayWidth  = this.canvas.clientWidth;
-    let displayHeight = this.canvas.clientHeight;
+    let realToCSSPixels = window.devicePixelRatio;
+
+    // Lookup the size the browser is displaying the canvas in CSS pixels
+    // and compute a size needed to make our drawingbuffer match it in
+    // device pixels.
+    let displayWidth  = Math.floor(this.canvas.clientWidth  * realToCSSPixels);
+    let displayHeight = Math.floor(this.canvas.clientHeight * realToCSSPixels);
+    
     // Check if the this.canvas is not the same size.
     if (this.canvas.width  !== displayWidth || this.canvas.height !== displayHeight)
     {

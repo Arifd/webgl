@@ -45,17 +45,36 @@ out vec4 outColour;
 }
 
 void main() {
-  vec2 st = gl_FragCoord.xy/u_resolution;
+  vec2 uv = gl_FragCoord.xy/u_resolution;
+  vec2 st = uv;
+  vec2 st2 = uv;
 
-  st.y -= u_deltaTime;
-  // st.x += sin(u_frameCount/10.0) / 100.0;
+  // Create noise map
 
-  float c = 0.0;
+  float n = 0.0; // our noise variable
 
-  c = snoise(st * 6.0);
+  st.y -= u_deltaTime * 0.5;
+  st2.y -= u_deltaTime * 0.725;
+  //st.x += sin(u_deltaTime/10.0) * 4.5; // wind simulation
 
-  vec3 colour = vec3(c);
-  //vec3 colour = vec3(smoothstep(0.0,1.0, pow(c,2.0)),smoothstep(0.0,1.0,pow(c,8.0)), 0.0);
+  const float distortionAmount = 1.0;
+  n = snoise(st * 4.3 + ((snoise(st2 * 5.0) - 0.5)) * distortionAmount); // modulate one noise by another changing at a different speed
+  n *= 0.5; // compensate for the layering of noise
+
+  // create gradient map
+
+  float g = 0.0; // our gradient variable
+
+  const float gradientHeightLimiter = 0.45;
+  g = mix(2.0, 0.0, uv.y + gradientHeightLimiter);
+
+  // add noise to gradient
+  float ng = n + g;
+
+  // display result
+
+  vec3 colour = vec3(ng);
+  //vec3 colour = vec3(smoothstep(0.0,1.0, pow(n,2.0)),smoothstep(0.0,1.0,pow(n,8.0)), 0.0);
 
   outColour = vec4(colour,1.0);
 }
