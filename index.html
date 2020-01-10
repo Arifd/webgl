@@ -97,7 +97,7 @@ void main() {
 
   vec3 colour = vec3(ng);
   //colour *= mix(vec3(1.0,1.0,0.0), vec3(1.0,0.0,0.0), uv.y);
-  colour *= vec3(1.0, // red
+  //colour *= vec3(1.0, // red
                  clamp(smoothstep(0.0,1.0,ng),0.0,0.5),  // green
                  0.0);                             // blue
 
