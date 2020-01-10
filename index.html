@@ -21,6 +21,12 @@ precision highp float; // high precision seems to fix snoise on some phones
 uniform vec2 u_resolution;
 uniform float u_deltaTime;
 
+uniform float u_noise1_move_speed;// = 0.5;
+uniform float u_noise2_move_speed;// = 0.725;
+uniform float u_noise1_octave;// = 4.3;
+uniform float u_noise2_octave;// = 5.0;
+uniform float u_distortion_amount;// = 1.0;
+
 out vec4 outColour;
 
 // Optimized Ashima Simplex noise2D by @makio64 https://www.shadertoy.com/view/4sdGD8
@@ -53,14 +59,15 @@ void main() {
 
   float n = 0.0; // our noise variable
 
-  st.y -= u_deltaTime * 0.5;
-  st2.y -= u_deltaTime * 0.725;
+  st.y -= u_deltaTime * u_noise1_move_speed;
+  st2.y -= u_deltaTime * u_noise2_move_speed;
   //st.x += sin(u_deltaTime/10.0) * 4.5; // wind simulation
 
-  const float distortionAmount = 1.0;
-  n = snoise(st * 4.3 + ((snoise(st2 * 5.0) - 0.5)) * distortionAmount); // modulate one noise by another changing at a different speed
+  // modulate one noise by another changing at a different speed
+  // snoise outputs 0 - 1, therefore we * 2.0 - 1.0 to balance 
+  n = snoise(st * u_noise1_octave + ((snoise(st2 * u_noise2_octave) * 2.0 - 1.0)) * u_distortion_amount);
   n *= 0.5; // compensate for the layering of noise
-
+  
   // create gradient map
 
   float g = 0.0; // our gradient variable
@@ -74,7 +81,10 @@ void main() {
   // display result
 
   vec3 colour = vec3(ng);
-  //vec3 colour = vec3(smoothstep(0.0,1.0, pow(n,2.0)),smoothstep(0.0,1.0,pow(n,8.0)), 0.0);
+  //colour *= mix(vec3(1.0,1.0,0.0), vec3(1.0,0.0,0.0), uv.y);
+  colour *= vec3(smoothstep(0.0,1.0, pow(ng,2.0)), // red
+                 smoothstep(0.0,1.0,pow(ng,8.0)),  // green
+                 0.0);                             // blue
 
   outColour = vec4(colour,1.0);
 }
@@ -92,6 +102,7 @@ void main() {
 <body>
 <canvas id="mainCanvas"></canvas>
 <script src="gl.js"></script>
+<script src="dat.min.js"></script>
 <script>
   var gl;
   window.addEventListener("load",function()
@@ -152,6 +163,23 @@ void main() {
     gl.uniform2f(uniformLocations["u_resolution"], mainCanvas.canvas.width, mainCanvas.canvas.height);
     gl.uniform1f(uniformLocations["u_deltaTime"], 0.0);
 
+    // DAT GUI STUFF
+    guiControls = new function()
+    {
+      this.noise1_move_speed = 0.001;
+      this.noise2_move_speed = 0.001;
+      this.noise1_octave = 0.1;
+      this.noise2_octave = 0.1;
+      this.distortion_amount = 0.1;
+    }
+    let datGUI = new dat.GUI();
+    datGUI.add(guiControls, 'noise1_move_speed', 0, 1).setValue(0.3);
+    datGUI.add(guiControls, 'noise2_move_speed', 0, 1).setValue(0.725);
+    datGUI.add(guiControls, 'noise1_octave', 0, 10).setValue(6.7);
+    datGUI.add(guiControls, 'noise2_octave', 0, 10).setValue(5.0);
+    datGUI.add(guiControls, 'distortion_amount', 0, 1).setValue(0.15);
+    // end: DAT GUI STUFF
+
     rloop = new RenderLoop(onRender).start();
     
     // MAIN RENDER LOOP
@@ -159,7 +187,13 @@ void main() {
     function onRender(dt)
     {
       frameCount += dt;
+      // set uniforms live
       gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
+      gl.uniform1f(uniformLocations["u_noise1_move_speed"], guiControls.noise1_move_speed);
+      gl.uniform1f(uniformLocations["u_noise2_move_speed"], guiControls.noise2_move_speed);
+      gl.uniform1f(uniformLocations["u_noise1_octave"], guiControls.noise1_octave);
+      gl.uniform1f(uniformLocations["u_noise2_octave"], guiControls.noise2_octave);
+      gl.uniform1f(uniformLocations["u_distortion_amount"], guiControls.distortion_amount);
       mainCanvas.clearCanvas();
       gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     }
