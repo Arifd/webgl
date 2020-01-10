@@ -145,14 +145,12 @@ void main() {
     gl.useProgram(program);        //Activate the Shader
 
     //Get Uniform Locations
-    let u_pointSizeUniformLocation = gl.getUniformLocation(program,"u_pointSize");
-    let u_resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-    let u_deltaTimeUniformLocation = gl.getUniformLocation(program, 'u_deltaTime');
+    let uniformLocations = mainCanvas.get_uniform_locations_from_shader_string(program, document.getElementById("fragment_shader").text);
 
     //Set Uniforms
-    gl.uniform1f(u_pointSizeUniformLocation, 1.0);
-    gl.uniform2f(u_resolutionUniformLocation, mainCanvas.canvas.width, mainCanvas.canvas.height);
-    gl.uniform1f(u_deltaTimeUniformLocation, 0.0);
+    gl.uniform1f(uniformLocations["u_pointSize"], 1.0);
+    gl.uniform2f(uniformLocations["u_resolution"], mainCanvas.canvas.width, mainCanvas.canvas.height);
+    gl.uniform1f(uniformLocations["u_deltaTime"], 0.0);
 
     rloop = new RenderLoop(onRender).start();
     
@@ -161,7 +159,7 @@ void main() {
     function onRender(dt)
     {
       frameCount += dt;
-      gl.uniform1f(u_deltaTimeUniformLocation, frameCount);
+      gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
       mainCanvas.clearCanvas();
       gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     }

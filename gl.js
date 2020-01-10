@@ -130,6 +130,24 @@ class GLInstance
 
   //...................................................
   //Setters - Getters
+  get_uniform_locations_from_shader_string(program, shaderString)
+    {
+      // create an array that contains all declarations of uniforms
+      let enitreDeclaration = shaderString.match(/uniform ([^\s]+) ([^\s!(; )]+)/g);
+      // extract the 3rd word of every object in the array (which will be the variable name)
+      let uniformVariables = [];
+      for (let i = 0; i < enitreDeclaration.length; ++i)
+      {
+        let extractedLine = enitreDeclaration[i].match(/uniform ([^\s]+) ([^\s!(; )]+)/);
+        uniformVariables.push(extractedLine[2])
+      }
+      // create an object that holds the UniformLocations to their variable names and return it
+      let u_pointSizeUniformLocation = gl.getUniformLocation(program,"u_pointSize");
+      let uniformLocations = {};
+      for (let i = 0; i < uniformVariables.length; ++i)
+        uniformLocations[uniformVariables[i]] = this.gl.getUniformLocation(program, uniformVariables[i]);
+      return uniformLocations;
+    }
 }
 
 ///////////////////////////////////////////////////////////////
