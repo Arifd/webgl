@@ -1,14 +1,64 @@
 ///////////////////////////////////////////////////
 // This WebGL library is homebrewed by Arif Driessen
-// taking MAJOR inspiration from both these excellent tutorial sources:
+// taking MAJOR inspiration from these excellent tutorial sources:
 // Indigo Code
 // https://www.youtube.com/watch?v=kB0ZVUrI4Aw
 // https://github.com/sessamekesh/IndigoCS-webgl-tutorials
 // SketchpunkLabs
 // https://www.youtube.com/watch?v=J9NC6Zf2uk4&list=PLMinhigDWz6emRKVkVIEAaePW7vtIkaIF&index=2
 // https://github.com/sketchpunk/FunWithWebGL2
+// WebGL2Fundamentals
+// https://webglfundamentals.org/
 ////////////////////////////////////////////////////
 "use strict";
+// global helper function to load shader strings from files
+async function fileShaderSrc(URL)
+{
+  // load shader string from file
+  let fragmentShaderString = "";
+  await fetch(URL).then(response => response.text()).then(data => fragmentShaderString = data);
+  return fragmentShaderString;
+}
+////////////////////////////////////////////////
+// global helper function to load image textures
+////////////////////////////////////////////////
+// Usage if used for a single image:
+// let image = loadImage('imageURL.jpg', () =>
+//   {
+//     // Now that the image has loaded copy it to the texture.
+//     let texture = gl.createTexture();
+//     gl.bindTexture(gl.TEXTURE_2D, texture);
+//     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+//     gl.generateMipmap(gl.TEXTURE_2D);
+//     //gl.bindTexture(gl.TEXTURE_2D, null);
+//   });
+////////////////////////////////////////////////
+function loadImage(url, callback = null) {
+  let image = new Image();
+  image.src = url;
+  image.onload = callback;
+  return image;
+}
+function loadImages(urls, callback)
+{
+  let images = [];
+  let imagesToLoad = urls.length;
+ 
+  // Called each time an image finished loading.
+  let onImageLoad = function()
+  {
+    --imagesToLoad;
+    // If all the images are loaded call the callback.
+    if (imagesToLoad == 0) callback(images);
+  };
+ 
+  for (let i = 0; i < imagesToLoad; ++i)
+  {
+    let image = loadImage(urls[i], onImageLoad);
+    images.push(image);
+  }
+}
+
 class GLInstance
 {
   constructor(canvasID)
@@ -54,16 +104,17 @@ class GLInstance
   // Clear the buffer
   clearCanvas(){ this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT); return this; }
 
-  createProgram(vShaderID,fShaderID,doValidate = false)
+  createProgram(vShaderString,fShaderString,doValidate = false)
   { // helper functions
-    function domShaderSrc(elmID)
-    {
-      let elm = document.getElementById(elmID);
-      if(!elm || elm.text == ""){ console.log(elmID + " shader not found or no text."); return null; }
+    // function domShaderSrc(elmID)
+    // {
+    //   let elm = document.getElementById(elmID);
+    //   if(!elm || elm.text == ""){ console.log(elmID + " shader not found or no text."); return null; }
       
-      return elm.text;
-    }
-    function createShader(context,src,type)
+    //   return elm.text;
+    // }
+    
+    function compileShader(context,src,type)
     {
       let shader = context.gl.createShader(type);
       context.gl.shaderSource(shader,src);
@@ -81,12 +132,10 @@ class GLInstance
     // end: helper functions
     //...................................................
     //SHADER STEPS
-    // 1. Load Vertex and Fragment Shader Strings
-    let vShaderString  = domShaderSrc(vShaderID);
-    let fShaderString  = domShaderSrc(fShaderID);
+    // 1. load fragment shader strings (already passed in as arguments to this function)
     // 2. Compile text and validate
-    let vShader   = createShader(this,vShaderString,this.gl.VERTEX_SHADER);
-    let fShader   = createShader(this,fShaderString,this.gl.FRAGMENT_SHADER);
+    let vShader   = compileShader(this,vShaderString,this.gl.VERTEX_SHADER);
+    let fShader   = compileShader(this,fShaderString,this.gl.FRAGMENT_SHADER);
 
     //Link shaders together
     let prog = this.gl.createProgram();
@@ -130,7 +179,7 @@ class GLInstance
 
   //...................................................
   //Setters - Getters
-  get_uniform_locations_from_shader_string(program, shaderString)
+  get_uniform_locations_from_shader_string(program, shaderString) // does this function need to exist inside GLInstance? Shouldn't it be a global function for all instances?
     {
       // create an array that contains all declarations of uniforms
       let enitreDeclaration = shaderString.match(/uniform ([^\s]+) ([^\s!(; )]+)/g);
@@ -142,7 +191,7 @@ class GLInstance
         uniformVariables.push(extractedLine[2])
       }
       // create an object that holds the UniformLocations to their variable names and return it
-      let u_pointSizeUniformLocation = gl.getUniformLocation(program,"u_pointSize");
+      let u_pointSizeUniformLocation = this.gl.getUniformLocation(program,"u_pointSize");
       let uniformLocations = {};
       for (let i = 0; i < uniformVariables.length; ++i)
         uniformLocations[uniformVariables[i]] = this.gl.getUniformLocation(program, uniformVariables[i]);
