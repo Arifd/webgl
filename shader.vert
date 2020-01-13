@@ -17,15 +17,14 @@ void main()
 {
   gl_PointSize = u_pointSize;
   
-  v_uv_anim.x = (a_vertPosition.x + (u_deltaTime * u_noise1_move_speed) * 0.025) * 0.25;
+  v_uv_anim.x = (a_vertPosition.x + (u_deltaTime * u_noise1_move_speed) * 0.025) * 0.25 + 0.65;
   v_uv_anim.y = (a_vertPosition.y - (u_deltaTime * u_noise1_move_speed)) * 0.25;
 
-  v_uv_anim_2.x = (a_vertPosition.x - (u_deltaTime * u_noise2_move_speed * 0.025)) * 0.25;
-  v_uv_anim_2.y = (a_vertPosition.y - (u_deltaTime * u_noise2_move_speed)) * 0.25;
+  v_uv_anim_2.x = (a_vertPosition.x - (u_deltaTime * u_noise2_move_speed * 0.125)) * 0.25 + 0.65;
+  v_uv_anim_2.y = (a_vertPosition.y - (u_deltaTime * u_noise2_move_speed)) * 0.25 + 0.65;
 
-  v_uv_anim_3.x = (a_vertPosition.x + (u_deltaTime * u_noise3_move_speed * 0.025)) * 0.25;
-  v_uv_anim_3.y = (a_vertPosition.y - (u_deltaTime * u_noise3_move_speed)) * 0.25;
-
+  v_uv_anim_3.x = (a_vertPosition.x + (u_deltaTime * u_noise3_move_speed * 0.125)) * 0.25 + 0.65;
+  v_uv_anim_3.y = (a_vertPosition.y - (u_deltaTime * u_noise3_move_speed)) * 0.25 + 0.65;
 
   v_texCoord = a_texCoord;
   gl_Position = vec4(a_vertPosition, 0.0, 1.0);
