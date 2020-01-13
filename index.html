@@ -136,22 +136,22 @@
     {
       this.noise1_move_speed = 0.001;
       this.noise2_move_speed = 0.001;
-      this.noise3_move_speed = 0.001;
-      this.u_smoothstep_value_A = 0.1;
+      this.noise3_distance_from_noise2 = 0.001;
+      this.u_smoothstep_value_A = 0.01;
       this.u_smoothstep_value_B = 0.1;
       this.distortion_amount = 0.1;
       this.distortion_amount_2 = 0.1;
-      this.u_blue = 0.1;
+      this.u_blue = 0.01;
     }
     let datGUI = new dat.GUI();
-    datGUI.add(guiControls, 'noise1_move_speed', 0, 4).setValue(0); //1.0757
-    datGUI.add(guiControls, 'noise2_move_speed', 0, 4).setValue(3.3734);
-    datGUI.add(guiControls, 'noise3_move_speed', 0, 4).setValue(4.0);
-    datGUI.add(guiControls, 'u_smoothstep_value_A', 0, 4).setValue(0.3);
-    datGUI.add(guiControls, 'u_smoothstep_value_B', 0, 4).setValue(0.9);
-    datGUI.add(guiControls, 'distortion_amount', 0, 4).setValue(0.6);
-    datGUI.add(guiControls, 'distortion_amount_2', 0, 4).setValue(0.6);
-    datGUI.add(guiControls, 'u_blue', 0, 100);
+    datGUI.add(guiControls, 'noise1_move_speed', 0, 4).setValue(0.8151); //1.0757
+    datGUI.add(guiControls, 'noise2_move_speed', 0, 4).setValue(1.9423);
+    datGUI.add(guiControls, 'noise3_distance_from_noise2', 0, 1).setValue(0.2471);
+    datGUI.add(guiControls, 'u_smoothstep_value_A', 0, 0.5).setValue(0.1);
+    datGUI.add(guiControls, 'u_smoothstep_value_B', 0.9, 4).setValue(0.9);
+    datGUI.add(guiControls, 'distortion_amount', 0, 1).setValue(0.3);
+    //datGUI.add(guiControls, 'distortion_amount_2', 0, 4).setValue(0.6);
+    datGUI.add(guiControls, 'u_blue', 0, 1).setValue(0.17);
     // end: DAT GUI STUFF
 
     rloop = new RenderLoop(onRender).start();
@@ -165,7 +165,7 @@
       gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
       gl.uniform1f(uniformLocations["u_noise1_move_speed"], guiControls.noise1_move_speed);
       gl.uniform1f(uniformLocations["u_noise2_move_speed"], guiControls.noise2_move_speed);
-      gl.uniform1f(uniformLocations["u_noise3_move_speed"], guiControls.noise3_move_speed);
+      gl.uniform1f(uniformLocations["noise3_distance_from_noise2"], guiControls.noise3_distance_from_noise2);
       gl.uniform1f(uniformLocations["u_smoothstep_value_A"], guiControls.u_smoothstep_value_A);
       gl.uniform1f(uniformLocations["u_smoothstep_value_B"], guiControls.u_smoothstep_value_B);
       gl.uniform1f(uniformLocations["u_distortion_amount"], guiControls.distortion_amount);
