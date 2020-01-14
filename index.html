@@ -134,24 +134,36 @@
     // DAT GUI STUFF
     guiControls = new function()
     {
-      this.noise1_move_speed = 0.001;
-      this.noise2_move_speed = 0.001;
+      this.flame_speed = 0.001;
       this.noise3_distance_from_noise2 = 0.001;
       this.u_smoothstep_value_A = 0.01;
       this.u_smoothstep_value_B = 0.1;
       this.distortion_amount = 0.1;
-      this.distortion_amount_2 = 0.1;
       this.u_blue = 0.01;
+
+      this.colour1 = [20.0, 4.0, 5.0];
+      this.colour2 = [95.0, 5.0, 3.0];
+      this.colour3 = [151.0, 20.0, 8.0];
+      this.colour4 = [203.0, 76.0, 7.0];
+      this.colour5 = [233.0, 201.0, 24.0];
+      this.colour6 = [248.0, 240.0, 203.0];
     }
     let datGUI = new dat.GUI();
-    datGUI.add(guiControls, 'noise1_move_speed', 0, 4).setValue(0.8151); //1.0757
-    datGUI.add(guiControls, 'noise2_move_speed', 0, 4).setValue(1.9423);
-    datGUI.add(guiControls, 'noise3_distance_from_noise2', 0, 1).setValue(0.2471);
-    datGUI.add(guiControls, 'u_smoothstep_value_A', 0, 0.5).setValue(0.1);
-    datGUI.add(guiControls, 'u_smoothstep_value_B', 0.9, 4).setValue(0.9);
-    datGUI.add(guiControls, 'distortion_amount', 0, 1).setValue(0.3);
-    //datGUI.add(guiControls, 'distortion_amount_2', 0, 4).setValue(0.6);
-    datGUI.add(guiControls, 'u_blue', 0, 1).setValue(0.17);
+    let f1 = datGUI.addFolder('Shape');
+    f1.add(guiControls, 'flame_speed', 0, 4).setValue(2.5321); //
+    f1.add(guiControls, 'noise3_distance_from_noise2', 0, 1).setValue(0.2471);
+    f1.add(guiControls, 'u_smoothstep_value_A', 0, 0.5).setValue(0.1);
+    f1.add(guiControls, 'u_smoothstep_value_B', 0.9, 4).setValue(0.9);
+    f1.add(guiControls, 'distortion_amount', 0, 1).setValue(0.3);
+    f1.add(guiControls, 'u_blue', 0, 10).setValue(0.17);
+    let f2 = datGUI.addFolder('Colour');
+    f2.addColor(guiControls, 'colour1');
+    f2.addColor(guiControls, 'colour2');
+    f2.addColor(guiControls, 'colour3');
+    f2.addColor(guiControls, 'colour4');
+    f2.addColor(guiControls, 'colour5');
+    f2.addColor(guiControls, 'colour6');
+
     // end: DAT GUI STUFF
 
     rloop = new RenderLoop(onRender).start();
@@ -163,7 +175,8 @@
       frameCount += dt;
       // set uniforms live
       gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
-      gl.uniform1f(uniformLocations["u_noise1_move_speed"], guiControls.noise1_move_speed);
+
+      gl.uniform1f(uniformLocations["u_flame_speed"], guiControls.flame_speed);
       gl.uniform1f(uniformLocations["u_noise2_move_speed"], guiControls.noise2_move_speed);
       gl.uniform1f(uniformLocations["noise3_distance_from_noise2"], guiControls.noise3_distance_from_noise2);
       gl.uniform1f(uniformLocations["u_smoothstep_value_A"], guiControls.u_smoothstep_value_A);
@@ -171,6 +184,14 @@
       gl.uniform1f(uniformLocations["u_distortion_amount"], guiControls.distortion_amount);
       gl.uniform1f(uniformLocations["u_distortion_amount_2"], guiControls.distortion_amount_2);
       gl.uniform1f(uniformLocations['u_blue'], guiControls.u_blue);
+
+      gl.uniform3fv(uniformLocations['u_colour1'],new Float32Array(guiControls.colour1));
+      gl.uniform3fv(uniformLocations['u_colour2'],new Float32Array(guiControls.colour2));
+      gl.uniform3fv(uniformLocations['u_colour3'],new Float32Array(guiControls.colour3));
+      gl.uniform3fv(uniformLocations['u_colour4'],new Float32Array(guiControls.colour4));
+      gl.uniform3fv(uniformLocations['u_colour5'],new Float32Array(guiControls.colour5));
+      gl.uniform3fv(uniformLocations['u_colour6'],new Float32Array(guiControls.colour6));
+
       mainCanvas.clearCanvas();
       gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
     }
