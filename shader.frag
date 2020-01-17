@@ -18,7 +18,8 @@ uniform float u_smoothstep_value_A;
 uniform float u_smoothstep_value_B;
 uniform float u_distortion_amount;// = 1.0;
 uniform float u_distortion_amount_2;// = 1.0;
-uniform float u_blue;
+uniform float u_test;
+uniform float u_octave;
 
 uniform vec3 u_colour6;
 uniform vec3 u_colour5;
@@ -76,6 +77,28 @@ float parabola( float x, float k ){
     return pow( 4.0*x*(1.0-x), k );
 }
 
+// Optimized Ashima Simplex noise2D by @makio64 https://www.shadertoy.com/view/4sdGD8
+// Original shader : https://github.com/ashima/webgl-noise/blob/master/src/noise2D.glsl
+// snoise return a value between 0 & 1
+// v5 fixed diagonal from abje comment
+lowp vec3 permute(in lowp vec3 x) { return mod( x*x*34.+x, 289.); }
+lowp float snoise(in lowp vec2 v) {
+  lowp vec2 i = floor((v.x+v.y)*.36602540378443 + v),
+      x0 = (i.x+i.y)*.211324865405187 + v - i;
+  lowp float s = step(x0.x,x0.y);
+  lowp vec2 j = vec2(1.0-s,s),
+      x1 = x0 - j + .211324865405187, 
+      x3 = x0 - .577350269189626; 
+  i = mod(i,289.);
+  lowp vec3 p = permute( permute( i.y + vec3(0, j.y, 1 ))+ i.x + vec3(0, j.x, 1 )   ),
+       m = max( .5 - vec3(dot(x0,x0), dot(x1,x1), dot(x3,x3)), 0.),
+       x = fract(p * .024390243902439) * 2. - 1.,
+       h = abs(x) - .5,
+      a0 = x - floor(x + .5);
+  return .5 + 65. * dot( pow(m,vec3(4.))*(- 0.85373472095314*( a0*a0 + h*h )+1.79284291400159 ), a0 * vec3(x0.x,x1.x,x3.x) + h * vec3(x0.y,x1.y,x3.y));
+}
+
+
 void main() {
   vec2 uv = gl_FragCoord.xy/u_resolution;
 
@@ -92,7 +115,7 @@ void main() {
 
   // modulate one noise by two others moving up at different speeds
   float mod1 = (texture(u_texture, v_uv_anim_2).b * 2.0 - 1.0) * u_distortion_amount;
-  float mod2 = (texture(u_texture, v_uv_anim_3).g * 2.0 - 1.0) * u_distortion_amount;
+  float mod2 = (texture(u_texture, v_uv_anim_3).b * 2.0 - 1.0) * u_distortion_amount;
 
   vec2 noiseCoords = vec2(v_uv_anim.y + mod1,
                           v_uv_anim.x - mod2);
@@ -105,16 +128,16 @@ void main() {
 
   // create gradient map
   //float g = mix(1.0,0.0, uv.y - 0.2) * cubicPulse(0.5, 0.5, 25.0, uv.x); // our gradient
-  float g = mix(1.0,0.0, (uv.y - 0.2) + pow(abs(uv.x - 0.5), 2.0)) * cubicPulse(0.5, 0.5, 40.0, uv.x); // with a bit of curve at the top
-  
-  // create 2nd gradient for sideChainNoise
-  //float g2 = mix(1.0,0.0, uv.y) * parabola(uv.x, 1.0);
+  float g = mix(1.0,0.0, uv.y - 0.2 + pow(abs(uv.x - 0.5), 1.75)) * cubicPulse(0.5, 0.5, 40.0, uv.x); // with a bit of curve at the top
+
+  // create 2nd gradient for smoke effect
+  float g2 = mix(1.0,0.0, uv.y) * parabola(uv.x, 1.0);
   
   // now pull it into the negative so fire (nose texture) will be pulled into (subtracted by) the gradient
-  g -= 1.1;
+  g -= 1.075; // increase this number to decrease flame size
   //g2 -= 1.0;
 
-  // add noise to gradient
+  // add noise to gradient. this is our fire, pre colour.
   float ng = n + g;
 
   // filter sideChainNoise by the gradient 
@@ -128,8 +151,11 @@ void main() {
   // get the lower and upper bounds
   float ngIndexLower = floor(ngIndex);
   float ngIndexFract = fract(ngIndex);
+  //float distortion = (mod1 * mod2) * 100.0;
   // mix the lower bound index with the next, by the fract amount.
-  vec3 colour = mix(colourArray[int(ngIndexLower)], colourArray[int(ngIndexLower)+1], vec3(ngIndexFract));
+  vec3 colour = mix(colourArray[int(ngIndexLower)],
+                    colourArray[int(ngIndexLower)+1],
+                    vec3(ngIndexFract));
 
   // basic colour, simple table lookup (for cartoon effect)
   //vec3 colour = colourArray[int(floor(max(0.0,ng) * float(COLOUR_ARRAY_LENGTH)))];
@@ -141,13 +167,16 @@ void main() {
   // finally add your sideChainNoise value back in, to bump up the brightness 
   colour += vec3(sideChainNoise);
 
+  // smoke effect
+   colour += vec3 ( max(0.0,(mod1 * mod2) * (-3.0 * (g2 * g)) )    );
+
   // debug: check where X pulls into the negative
   /////////////////////////////////////////////////
-  // float X = sideChainNoise;
+  // float X = g2;
   // colour = vec3(X);
   // if (X < 0.0) colour = vec3(-1.0 * X,0.0,0.0);
-  /////////////////////////////////////////////////
+  ///////////////////////////////////////////////
 
   // send to output buffer
-  outColour = vec4(colour,1.0);
+  outColour = vec4(vec3(colour),1.0);
 }
