@@ -1,4 +1,4 @@
-t<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=windows-1252">
@@ -21,6 +21,7 @@ t<!DOCTYPE html>
 <script src="utils.js"></script>
 <script src="dat.min.js"></script>
 <script src="stats.min.js"></script>
+<script src="motiondetector.js"></script>
 <script>
   var gl;
   window.addEventListener("load",async function()
@@ -141,6 +142,13 @@ t<!DOCTYPE html>
     // note, there is also a specific style attribute added in the CSS:
     // .dg li.gui-stats:not(.folder) {height: auto;}
 
+// OLD COLOURS:
+//       this.colour2 = [95.0, 5.0, 3.0];
+//       this.colour3 = [151.0, 20.0, 8.0];
+//       this.colour4 = [203.0, 76.0, 7.0];
+//       this.colour5 = [233.0, 201.0, 24.0];
+//       this.colour6 = [248.0, 240.0, 203.0];
+
     // DAT GUI STUFF
     let guiChange = true; // flag to determine whether to update uniforms
     guiControls = new function()
@@ -150,12 +158,13 @@ t<!DOCTYPE html>
       this.u_smoothstep_value_A = 0.01;
       this.u_smoothstep_value_B = 0.1;
       this.distortion_amount = 0.1;
+      this.flame_size = 0.1;
 
       this.allColours = 0.1;
-      this.colour1 = [20.0, 4.0, 5.0];
-      this.colour2 = [95.0, 5.0, 3.0];
-      this.colour3 = [151.0, 20.0, 8.0];
-      this.colour4 = [203.0, 76.0, 7.0];
+      this.colour1 = [10.0, 4.0, 4.0];
+      this.colour2 = [0.0, 0.0, 0.0];
+      this.colour3 = [65.0, 3.0, 3.0];
+      this.colour4 = [203.0, 30.0, 7.0];
       this.colour5 = [233.0, 201.0, 24.0];
       this.colour6 = [248.0, 240.0, 203.0];
     }
@@ -163,9 +172,10 @@ t<!DOCTYPE html>
     let f1 = gui.addFolder('Shape');
     f1.add(guiControls, 'flame_speed', 0, 4).setValue(1.65).onChange(() => guiChange = true);
     f1.add(guiControls, 'noise3_distance_from_noise2', 0, 1).setValue(0.2471).onChange(() => guiChange = true);
-    f1.add(guiControls, 'u_smoothstep_value_A', 0, 0.5).setValue(0.0).onChange(() => guiChange = true);
-    f1.add(guiControls, 'u_smoothstep_value_B', 0.9, 4).setValue(0.9).onChange(() => guiChange = true);
-    f1.add(guiControls, 'distortion_amount', 0, 1).setValue(0.5).onChange(() => guiChange = true);
+    f1.add(guiControls, 'u_smoothstep_value_A', 0, 1.0).setValue(0.8).onChange(() => guiChange = true);
+    f1.add(guiControls, 'u_smoothstep_value_B', 0.0, 4).setValue(1.0).onChange(() => guiChange = true);
+    f1.add(guiControls, 'distortion_amount', 0, 1).setValue(0.45).onChange(() => guiChange = true);
+    f1.add(guiControls, 'flame_size', 0.7, 1.7).setValue(0.86).onChange(() => guiChange = true);
     let f2 = gui.addFolder('Colour');
     f2.add(guiControls, 'allColours', 0, 1).setValue(0).onChange(() => guiChange = true);
     f2.addColor(guiControls, 'colour1').onChange(() => guiChange = true);
@@ -193,6 +203,22 @@ t<!DOCTYPE html>
     {
       stats.begin();
       frameCount += dt;
+
+      // GET WEBCAM INPUT
+      // make an image from the canvas
+      let webcamImage = new Image();
+      webcamImage.src = motionDetectorOutput.toDataURL();
+      webcamImage.onload = () =>
+      { 
+        // use the new image as a texture
+        let webcamTexture = gl.createTexture();
+        // send to GPU      
+        gl.activeTexture(gl.TEXTURE0 + 1);
+        gl.bindTexture(gl.TEXTURE_2D, webcamTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webcamImage);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      };
+
       // set uniforms live
       gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
 
@@ -204,7 +230,7 @@ t<!DOCTYPE html>
         gl.uniform1f(uniformLocations["u_smoothstep_value_A"], guiControls.u_smoothstep_value_A);
         gl.uniform1f(uniformLocations["u_smoothstep_value_B"], guiControls.u_smoothstep_value_B);
         gl.uniform1f(uniformLocations["u_distortion_amount"], guiControls.distortion_amount);
-        gl.uniform1f(uniformLocations["u_distortion_amount_2"], guiControls.distortion_amount_2);
+        gl.uniform1f(uniformLocations["u_flame_size"], guiControls.flame_size);
 
         // adjust Colours
         let colourArray = [guiControls.colour1,

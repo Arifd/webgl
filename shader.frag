@@ -18,7 +18,7 @@ uniform float u_smoothstep_value_A;
 uniform float u_smoothstep_value_B;
 uniform float u_distortion_amount;// = 1.0;
 uniform float u_distortion_amount_2;// = 1.0;
-uniform float u_test;
+uniform float u_flame_size;
 uniform float u_octave;
 
 uniform vec3 u_colour6;
@@ -121,27 +121,29 @@ void main() {
                           v_uv_anim.x - mod2);
 
   // create a final noise texture (by distorting noise with more layers of noise)
-  //float n = texture(u_texture, noiseCoords).r;
-  float n = smoothstep(u_smoothstep_value_A,u_smoothstep_value_B,texture(u_texture, noiseCoords).r);
+  float n = texture(u_texture, noiseCoords).b;
+  //float n = smoothstep(0.1,0.9,texture(u_texture, noiseCoords).b);
   // side chain: take a copy of noise, to add back in later as another layer of colour/detail on top.
-  float sideChainNoise = smoothstep(0.9,1.0,n);
+  float sideChainNoise = smoothstep(u_smoothstep_value_A,u_smoothstep_value_B,n);
 
   // create gradient map
   //float g = mix(1.0,0.0, uv.y - 0.2) * cubicPulse(0.5, 0.5, 25.0, uv.x); // our gradient
   float g = mix(1.0,0.0, uv.y - 0.2 + pow(abs(uv.x - 0.5), 1.75)) * cubicPulse(0.5, 0.5, 40.0, uv.x); // with a bit of curve at the top
+  // CURRENTLY EXPERIMENTING WITH USING A WEBCAM AS GRADIENT
+  //float g = texture(u_texture2, v_texCoord).r;
 
   // create 2nd gradient for smoke effect
   float g2 = mix(1.0,0.0, uv.y) * parabola(uv.x, 1.0);
   
   // now pull it into the negative so fire (nose texture) will be pulled into (subtracted by) the gradient
-  g -= 1.075; // increase this number to decrease flame size
+  g -= u_flame_size; // increase this number to decrease flame size
   //g2 -= 1.0;
 
   // add noise to gradient. this is our fire, pre colour.
   float ng = n + g;
 
   // filter sideChainNoise by the gradient 
-  sideChainNoise *= max(0.0, ng + g);
+  sideChainNoise *= max(0.0, ng + g) * 3.0;
 
   // apply ng as grayscale to final output colour
   
@@ -168,14 +170,14 @@ void main() {
   colour += vec3(sideChainNoise);
 
   // smoke effect
-   colour += vec3 ( max(0.0,(mod1 * mod2) * (-3.0 * (g2 * g)) )    );
+   colour += max(0.0,(mod1 * mod2) * (-3.0 * (g2 * g)) );
 
   // debug: check where X pulls into the negative
   /////////////////////////////////////////////////
-  // float X = g2;
+  // float X = sideChainNoise;
   // colour = vec3(X);
   // if (X < 0.0) colour = vec3(-1.0 * X,0.0,0.0);
-  ///////////////////////////////////////////////
+  // /////////////////////////////////////////////
 
   // send to output buffer
   outColour = vec4(vec3(colour),1.0);
