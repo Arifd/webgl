@@ -31,7 +31,7 @@ var MotionDetector = (function() {
   var canvasFinal = document.createElement('canvas');
   canvasFinal.width = video.width;
   canvasFinal.height = video.height;
-  //document.body.appendChild(canvasFinal);
+  document.body.appendChild(canvasFinal);
   motionDetectorOutput = canvasFinal;   // global variable is set here
 
   var ctx = canvas.getContext('2d');
