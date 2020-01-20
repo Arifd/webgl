@@ -1,5 +1,5 @@
 #version 300 es
-precision highp float;
+precision lowp float;
 in vec2 a_vertPosition;
 in vec2 a_texCoord;
 uniform float u_pointSize;

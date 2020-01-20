@@ -22,6 +22,7 @@
 <script src="dat.min.js"></script>
 <script src="stats.min.js"></script>
 <script src="motiondetector.js"></script>
+<script src="sobel.js"></script>
 <script>
   var gl;
   window.addEventListener("load",async function()
@@ -175,7 +176,7 @@
     f1.add(guiControls, 'u_smoothstep_value_A', 0, 1.0).setValue(0.8).onChange(() => guiChange = true);
     f1.add(guiControls, 'u_smoothstep_value_B', 0.0, 4).setValue(1.0).onChange(() => guiChange = true);
     f1.add(guiControls, 'distortion_amount', 0, 1).setValue(0.45).onChange(() => guiChange = true);
-    f1.add(guiControls, 'flame_size', 0.7, 1.7).setValue(0.86).onChange(() => guiChange = true);
+    f1.add(guiControls, 'flame_size', 0.7, 1.7).setValue(1.2).onChange(() => guiChange = true);
     let f2 = gui.addFolder('Colour');
     f2.add(guiControls, 'allColours', 0, 1).setValue(0).onChange(() => guiChange = true);
     f2.addColor(guiControls, 'colour1').onChange(() => guiChange = true);
@@ -192,7 +193,6 @@
     console.log(perfLi)
     perfLi.classList.add("gui-stats");
     perfFolder.__ul.appendChild(perfLi);
-
     // end: DAT GUI STUFF
 
     rloop = new RenderLoop(onRender).start();
@@ -202,22 +202,7 @@
     function onRender(dt)
     {
       stats.begin();
-      frameCount += dt;
-
-      // GET WEBCAM INPUT
-      // make an image from the canvas
-      let webcamImage = new Image();
-      webcamImage.src = motionDetectorOutput.toDataURL();
-      webcamImage.onload = () =>
-      { 
-        // use the new image as a texture
-        let webcamTexture = gl.createTexture();
-        // send to GPU      
-        gl.activeTexture(gl.TEXTURE0 + 1);
-        gl.bindTexture(gl.TEXTURE_2D, webcamTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webcamImage);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      };
+      frameCount += 0.022; // delta_time actually makes it skippy on low resolutions.
 
       // set uniforms live
       gl.uniform1f(uniformLocations["u_deltaTime"], frameCount);
@@ -265,6 +250,28 @@
       stats.end();
     }
   });
+</script>
+<script type="text/javascript">
+// MOBILE DEBUGGING
+// Reference to an output container, use 'pre' styling for JSON output
+var output = document.createElement('pre');
+document.body.appendChild(output);
+
+// Reference to native method(s)
+var oldLog = console.log;
+
+console.log = function( ...items ) {
+
+    // Call native method first
+    oldLog.apply(this,items);
+
+    // Use JSON to transform objects, all others display normally
+    items.forEach( (item,i)=>{
+        items[i] = (typeof item === 'object' ? JSON.stringify(item,null,4) : item);
+    });
+    output.innerHTML += items.join(' ') + '<br />';
+
+};
 </script>
 </body>
 </html>

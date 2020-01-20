@@ -1,5 +1,5 @@
 #version 300 es 
-precision highp float; // high precision seems to fix snoise on some phones
+precision lowp float; // high precision seems to fix snoise on some phones
 
 uniform vec2 u_resolution;
 uniform float u_deltaTime;
@@ -77,28 +77,6 @@ float parabola( float x, float k ){
     return pow( 4.0*x*(1.0-x), k );
 }
 
-// Optimized Ashima Simplex noise2D by @makio64 https://www.shadertoy.com/view/4sdGD8
-// Original shader : https://github.com/ashima/webgl-noise/blob/master/src/noise2D.glsl
-// snoise return a value between 0 & 1
-// v5 fixed diagonal from abje comment
-lowp vec3 permute(in lowp vec3 x) { return mod( x*x*34.+x, 289.); }
-lowp float snoise(in lowp vec2 v) {
-  lowp vec2 i = floor((v.x+v.y)*.36602540378443 + v),
-      x0 = (i.x+i.y)*.211324865405187 + v - i;
-  lowp float s = step(x0.x,x0.y);
-  lowp vec2 j = vec2(1.0-s,s),
-      x1 = x0 - j + .211324865405187, 
-      x3 = x0 - .577350269189626; 
-  i = mod(i,289.);
-  lowp vec3 p = permute( permute( i.y + vec3(0, j.y, 1 ))+ i.x + vec3(0, j.x, 1 )   ),
-       m = max( .5 - vec3(dot(x0,x0), dot(x1,x1), dot(x3,x3)), 0.),
-       x = fract(p * .024390243902439) * 2. - 1.,
-       h = abs(x) - .5,
-      a0 = x - floor(x + .5);
-  return .5 + 65. * dot( pow(m,vec3(4.))*(- 0.85373472095314*( a0*a0 + h*h )+1.79284291400159 ), a0 * vec3(x0.x,x1.x,x3.x) + h * vec3(x0.y,x1.y,x3.y));
-}
-
-
 void main() {
   vec2 uv = gl_FragCoord.xy/u_resolution;
 
@@ -130,18 +108,24 @@ void main() {
   //float g = mix(1.0,0.0, uv.y - 0.2) * cubicPulse(0.5, 0.5, 25.0, uv.x); // our gradient
   float g = mix(1.0,0.0, uv.y - 0.2 + pow(abs(uv.x - 0.5), 1.75)) * cubicPulse(0.5, 0.5, 40.0, uv.x); // with a bit of curve at the top
   // CURRENTLY EXPERIMENTING WITH USING A WEBCAM AS GRADIENT
-  //float g = texture(u_texture2, v_texCoord).r;
-
+  float input2 = texture(u_texture2, v_texCoord).r;
+  // modulate the gradient which brings input2 INTO the fuel of the flames (not just infront or behind)
+  // g *= g + (input2); // if colourising later at the end, disable this gradient modulation
+  // don't like this because it has side effects on the gradient
+  
   // create 2nd gradient for smoke effect
   float g2 = mix(1.0,0.0, uv.y) * parabola(uv.x, 1.0);
-  
+
+  // create 3rd gradient for spooky spirit
+  //float g3 = g * g2 * cubicPulse(0.5, 0.5, 1.2, uv.y) * 2.0;
+
   // now pull it into the negative so fire (nose texture) will be pulled into (subtracted by) the gradient
   g -= u_flame_size; // increase this number to decrease flame size
   //g2 -= 1.0;
 
   // add noise to gradient. this is our fire, pre colour.
   float ng = n + g;
-
+  
   // filter sideChainNoise by the gradient 
   sideChainNoise *= max(0.0, ng + g) * 3.0;
 
@@ -165,20 +149,26 @@ void main() {
   // because lookup table is in RGB 0 - 255, we need to normalise to 0 - 1.
   // this can be completely optimised out by pre-applying it to the lookup table, but for now, it's only one operation.
   colour *= vec3(0.00392156862); // this is the equivalent of divide by 255.
-  
+
+  // create a 'spooky pirit' input by modulating webcam with gradient and noise
+  float spirit = input2 * ((ng * 20.0)) * ng * g2; 
+  colour += min(0.333,spirit);
+  //colour.b += spirit;
+
   // finally add your sideChainNoise value back in, to bump up the brightness 
   colour += vec3(sideChainNoise);
 
   // smoke effect
-   colour += max(0.0,(mod1 * mod2) * (-3.0 * (g2 * g)) );
+  colour += max(0.0,((mod1 * 2.0) * (mod2 * 2.0)) * (-3.0 * (g2 * g)) );
 
   // debug: check where X pulls into the negative
   /////////////////////////////////////////////////
-  // float X = sideChainNoise;
+  // float X = g3;
   // colour = vec3(X);
   // if (X < 0.0) colour = vec3(-1.0 * X,0.0,0.0);
-  // /////////////////////////////////////////////
+  /////////////////////////////////////////////
 
   // send to output buffer
   outColour = vec4(vec3(colour),1.0);
+  //outColour = texture(u_texture2, v_texCoord);
 }
