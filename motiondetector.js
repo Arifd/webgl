@@ -28,12 +28,15 @@ var MotionDetector = (function() {
   var canvasFinal = document.createElement('canvas');
   canvasFinal.width = video.width;
   canvasFinal.height = video.height;
+  // local copy of canvas.width/height for speed
+  var canvasWidth = canvas.width;
+  var canvasHeight = canvas.height;
   //document.body.appendChild(canvasFinal);
   motionDetectorOutput = canvasFinal;   // global variable is set here
 
   var ctx = canvas.getContext('2d');
   // mirror the image
-  ctx.translate(canvas.width, 0);
+  ctx.translate(canvasWidth, 0);
   ctx.scale(-1, 1);
 
   var ctxFinal = canvasFinal.getContext('2d');
@@ -44,7 +47,7 @@ var MotionDetector = (function() {
   var imgDataPrev = [];
   var version = 0;
   
-  var feedbackData = []; // this will store a feedback loop of previous iterations
+  var feedbackData = new Uint8ClampedArray(canvasWidth * canvasHeight * 4); // this will store a feedback loop of previous iterations
 
   // this will hold the image to be sent to GPU
   var webcamImage = new Image();
@@ -118,21 +121,21 @@ function difference(target, data1, data2) {
 
   function snapshot() {
     if (localStream) {
-      // canvas.width = video.offsetWidth;
-      // canvas.height = video.offsetHeight;
+      // canvasWidth = video.offsetWidth;
+      // canvasHeight = video.offsetHeight;
       // canvasFinal.width = video.offsetWidth;
       // canvasFinal.height = video.offsetHeight;
 
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
 
       // Must capture image data in new instance as it is a live reference.
       // Use alternative live referneces to prevent messed up data.
-      imgDataPrev[version] = ctx.getImageData(0, 0, canvas.width, canvas.height); 
+      imgDataPrev[version] = ctx.getImageData(0, 0, canvasWidth, canvasHeight); 
       //let feedbackData = imgDataPrev[version].data;
 
       version = (version == 0) ? 1 : 0;
       
-      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
 
       //faster difference function taken from: https://github.com/ReallyGood/js-motion-detection/blob/master/js/app.js
       differenceAccuracy(imgData, imgData.data, imgDataPrev[version].data);
