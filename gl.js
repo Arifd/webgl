@@ -64,7 +64,11 @@ class GLInstance
   constructor(canvasID)
   {
     this.canvas = document.getElementById(canvasID);
-    this.gl = this.canvas.getContext("webgl2");
+    let parameters = {
+      premultipliedAlpha: false,
+      alpha: false,
+    }
+    this.gl = this.canvas.getContext("webgl2", parameters);
     if(!this.gl){ console.error("WebGL context is not available."); return null; }
 
     //...................................................

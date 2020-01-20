@@ -93,7 +93,7 @@ function difference(target, data1, data2) {
     var i = 0;
     const rows = target.width * 12; // there are 4 channels for every pixel in with. but because I want the pixels to shift up THREE rows at a time, we multiply by 2 * 4
     const iteratorLength = data1.length * 0.25;
-    while (i < (iteratorLength)) {
+    while (i < iteratorLength) {
       let ii = 4 * i;
       ///// with rgb averaging
       var average1 = (data1[ii] + data1[ii + 1] + data1[ii + 2]) / 3;
