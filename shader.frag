@@ -159,7 +159,7 @@ void main() {
   colour += vec3(sideChainNoise);
 
   // smoke effect
-  colour += max(0.0,((mod1 * 2.0) * (mod2 * 2.0)) * (-3.0 * (g2 * g)) );
+  colour += ((mod1 * 2.0) * (mod2 * 2.0)) * (-3.0 * (g2 * g));
 
   // debug: check where X pulls into the negative
   /////////////////////////////////////////////////

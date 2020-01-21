@@ -22,9 +22,9 @@
 <script src="dat.min.js"></script>
 <script src="stats.min.js"></script>
 <script src="motiondetector.js"></script>
-<script src="sobel.js"></script>
 <script>
   var gl;
+  var stats;
   window.addEventListener("load",async function()
   {
     //............................................        
@@ -137,7 +137,7 @@
     gl.uniform1f(uniformLocations["u_deltaTime"], 0.0);
 
     // STATS.JS STUFF
-    let stats = new Stats();
+    stats = new Stats();
     stats.domElement.height = '48px';
     [].forEach.call(stats.domElement.children, (child) => (child.style.display = ''));
     // note, there is also a specific style attribute added in the CSS:
@@ -250,45 +250,6 @@
       stats.end();
     }
   });
-</script>
-<script type="text/javascript">
-// MOBILE DEBUGGING
-// Reference to an output container, use 'pre' styling for JSON output
-var output = document.createElement('pre');
-document.body.appendChild(output);
-
-// Reference to native method(s)
-var oldLog = console.log;
-
-console.log = function( ...items ) {
-
-    // Call native method first
-    oldLog.apply(this,items);
-
-    // Use JSON to transform objects, all others display normally
-    items.forEach( (item,i)=>{
-        items[i] = (typeof item === 'object' ? JSON.stringify(item,null,4) : item);
-    });
-    output.innerHTML += items.join(' ') + '<br />';
-
-};
-
-// Reference to native method(s)
-var oldError = console.error;
-
-console.log = function( ...items ) {
-
-    // Call native method first
-    oldError.apply(this,items);
-
-    // Use JSON to transform objects, all others display normally
-    items.forEach( (item,i)=>{
-        items[i] = (typeof item === 'object' ? JSON.stringify(item,null,4) : item);
-    });
-    output.innerHTML += 'Error: ';
-    output.innerHTML += items.join(' ') + '<br />';
-
-};
 </script>
 </body>
 </html>

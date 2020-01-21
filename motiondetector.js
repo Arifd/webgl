@@ -65,11 +65,6 @@ var MotionDetector = (function() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   }
 
-    function fastAbs(value) {
-    // funky bitwise, equal Math.abs
-    return (value ^ (value >> 31)) - (value >> 31);
-  }
-
   function threshold(value) {
     return (value > 0x30) ? 0xFF : 0; // threshold was 0x15
   }
@@ -81,10 +76,10 @@ function difference(target, data1, data2) {
     var i = 0;
     const iteratorLength = data1.length;
     while (i < iteratorLength) {
-      let diff = fastAbs(data1[i] - data2[i]); // only need to work on one channel
+      let diff = Math.abs(data1[i] - data2[i]); // only need to work on one channel
       target.data[i] = data1[i] == 0 ? 0 : diff * 5;
-      target.data[4 * i + 1] = data1[4 * i + 1] == 0 ? 0 : fastAbs(data1[4 * i + 1] - data2[4 * i + 1]);
-      target.data[4 * i + 2] = data1[4 * i + 2] == 0 ? 0 : fastAbs(data1[4 * i + 2] - data2[4 * i + 2]);
+      target.data[4 * i + 1] = data1[4 * i + 1] == 0 ? 0 : Math.abs(data1[4 * i + 1] - data2[4 * i + 1]);
+      target.data[4 * i + 2] = data1[4 * i + 2] == 0 ? 0 : Math.abs(data1[4 * i + 2] - data2[4 * i + 2]);
       target.data[4 * i + 3] = 0xFF;
       i += 4;
     }
@@ -102,15 +97,12 @@ function difference(target, data1, data2) {
       ///// with rgb averaging
       var average1 = (data1[ii] + data1[ii + 1] + data1[ii + 2]) / 3;
       var average2 = (data2[ii] + data2[ii + 1] + data2[ii + 2]) / 3;
-      var diff = threshold(fastAbs(average1 - average2));
+      var diff = threshold(Math.abs(average1 - average2));
 
-      //if(diff)
-      {
-        feedbackData[ii]     = fastAbs(feedbackData[(ii    ) + rows] * 0.85 + diff);
-        feedbackData[ii + 1] = fastAbs(feedbackData[(ii + 1) + rows] * 0.85 + diff);
-        feedbackData[ii + 2] = fastAbs(feedbackData[(ii + 2) + rows] * 0.85 + diff);
-        feedbackData[ii + 3] =  0xFF;      
-      }
+      feedbackData[ii]     = (feedbackData[(ii    ) + rows] * 0.85 + diff);
+      feedbackData[ii + 1] = (feedbackData[(ii + 1) + rows] * 0.85 + diff);
+      feedbackData[ii + 2] = (feedbackData[(ii + 2) + rows] * 0.85 + diff);
+      //feedbackData[ii + 3] =  0xFF;      
 
       target.data[ii]     = feedbackData[ii];
       target.data[ii + 1] = feedbackData[ii + 1];
@@ -121,18 +113,13 @@ function difference(target, data1, data2) {
   }
 
   function snapshot() {
-    if (localStream) {
-      // canvasWidth = video.offsetWidth;
-      // canvasHeight = video.offsetHeight;
-      // canvasFinal.width = video.offsetWidth;
-      // canvasFinal.height = video.offsetHeight;
-
+    if (localStream)
+    {
       ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
 
       // Must capture image data in new instance as it is a live reference.
       // Use alternative live referneces to prevent messed up data.
       imgDataPrev[version] = ctx.getImageData(0, 0, canvasWidth, canvasHeight); 
-      //let feedbackData = imgDataPrev[version].data;
 
       version = (version == 0) ? 1 : 0;
       
@@ -140,21 +127,20 @@ function difference(target, data1, data2) {
 
       //faster difference function taken from: https://github.com/ReallyGood/js-motion-detection/blob/master/js/app.js
       differenceAccuracy(imgData, imgData.data, imgDataPrev[version].data);
-      //imgData = Sobel(imgData).toImageData();
-
+      
 
       ctxFinal.putImageData(imgData, 0, 0);
 
       // SEND TO FINAL DESTINATION/OUTPUT (IN THIS CASE, GPU)
-      setTimeout(updateGPU);
+      setTimeout(updateGPU);      
     }
   }
   
   function updateGPU()
   {
     // make an image from the canvas and send it out asap.
-      webcamImage.src = motionDetectorOutput.toDataURL();
-      webcamImage.onload = () => gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webcamImage);
+    webcamImage.src = motionDetectorOutput.toDataURL('image/jpeg', 0.5); // 0.5 = quality
+    webcamImage.onload = () => gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webcamImage);
   }
 
   function init_() {
