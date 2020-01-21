@@ -90,7 +90,8 @@ function difference(target, data1, data2) {
     }
   }
 
-  function differenceAccuracy(target, data1, data2) {
+  function differenceAccuracy(target, data1, data2)
+  {
     // no error checking
     //if (data1.length != data2.length) return null;
     var i = 0;
@@ -111,9 +112,9 @@ function difference(target, data1, data2) {
         feedbackData[ii + 3] =  0xFF;      
       }
 
-      target.data[ii]     = feedbackData[4*i];
-      target.data[ii + 1] = feedbackData[4*i+1];
-      target.data[ii + 2] = feedbackData[4*i+2];
+      target.data[ii]     = feedbackData[ii];
+      target.data[ii + 1] = feedbackData[ii + 1];
+      target.data[ii + 2] = feedbackData[ii + 2];
       target.data[ii + 3] = 0xFF;
       ++i;
     }

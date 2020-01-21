@@ -272,6 +272,23 @@ console.log = function( ...items ) {
     output.innerHTML += items.join(' ') + '<br />';
 
 };
+
+// Reference to native method(s)
+var oldError = console.error;
+
+console.log = function( ...items ) {
+
+    // Call native method first
+    oldError.apply(this,items);
+
+    // Use JSON to transform objects, all others display normally
+    items.forEach( (item,i)=>{
+        items[i] = (typeof item === 'object' ? JSON.stringify(item,null,4) : item);
+    });
+    output.innerHTML += 'Error: ';
+    output.innerHTML += items.join(' ') + '<br />';
+
+};
 </script>
 </body>
 </html>
