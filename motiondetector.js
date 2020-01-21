@@ -34,12 +34,12 @@ var MotionDetector = (function() {
   //document.body.appendChild(canvasFinal);
   motionDetectorOutput = canvasFinal;   // global variable is set here
 
-  var ctx = canvas.getContext('2d');
+  var ctx = canvas.getContext('2d', {alpha: false});
   // mirror the image
   ctx.translate(canvasWidth, 0);
   ctx.scale(-1, 1);
 
-  var ctxFinal = canvasFinal.getContext('2d');
+  var ctxFinal = canvasFinal.getContext('2d', {alpha: false});
   var localStream = null;
 
   // md = motion detector, hm = heatmap
