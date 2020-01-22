@@ -158,5 +158,3 @@ function difference(target, data1, data2) {
     init: init_
   };
 })();
-
-ManageWebcamInput.init();
