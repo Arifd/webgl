@@ -11,14 +11,6 @@
 // https://webglfundamentals.org/
 ////////////////////////////////////////////////////
 "use strict";
-// global helper function to load shader strings from files
-async function fileShaderSrc(URL)
-{
-  // load shader string from file
-  let fragmentShaderString = "";
-  await fetch(URL).then(response => response.text()).then(data => fragmentShaderString = data);
-  return fragmentShaderString;
-}
 ////////////////////////////////////////////////
 // global helper function to load image textures
 ////////////////////////////////////////////////
@@ -68,7 +60,7 @@ class GLInstance
       premultipliedAlpha: false,
       alpha: false,
     }
-    this.gl = this.canvas.getContext("webgl2", parameters);
+    this.gl = this.canvas.getContext("webgl", parameters);
     if(!this.gl){ console.error("WebGL context is not available."); return null; }
 
     //...................................................

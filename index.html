@@ -17,29 +17,22 @@
 </head>
 <body>
 <canvas id="mainCanvas"></canvas>
+<script src="vertshader.js"></script>
+<script src="fragshader.js"></script>
 <script src="gl.js"></script>
 <script src="utils.js"></script>
 <script src="dat.min.js"></script>
 <script src="stats.min.js"></script>
-<script src="motiondetector.js"></script>
+<script src="managewebcaminput.js"></script>
 <script>
-  var gl;
-  var stats;
-  window.addEventListener("load",async function()
-  {
     //............................................        
     //Get our extended GL Context Object
     let mainCanvas = new GLInstance("mainCanvas");
-    gl = mainCanvas.gl;
-
-    //............................................
-    // Load Shader Strings
-    vShaderString = await fileShaderSrc('shader.vert');
-    fShaderString = await fileShaderSrc('shader.frag');
+    let gl = mainCanvas.gl;
 
     //............................................
     // Create Program from Shaders
-    let program  = mainCanvas.createProgram(vShaderString,fShaderString,true);
+    let program  = mainCanvas.createProgram(vertShaderString,fragShaderString);
 
     //............................................
     //Set Up Data Buffers
@@ -92,7 +85,7 @@
   // Asynchronously load multiple images
   let imageURLs =
   [
-    'noise-composition.png',
+    'noise-composition.png'
   ];
   loadImages(imageURLs, (images) => 
    {
@@ -125,7 +118,7 @@
     gl.useProgram(program);        //Activate the Shader
 
     //Get Uniform Locations
-    let uniformLocations = mainCanvas.get_uniform_locations_from_shader_string(program, fShaderString);
+    let uniformLocations = mainCanvas.get_uniform_locations_from_shader_string(program, fragShaderString);
 
     // set which texture units to render with.
     gl.uniform1i(uniformLocations['u_texture'], 0);  // texture unit 0
@@ -249,7 +242,6 @@
       gl.drawElements(gl.TRIANGLES, quadIndices.length, gl.UNSIGNED_SHORT, 0); // draw type, number of vertices, type of data, offset
       stats.end();
     }
-  });
 </script>
 </body>
 </html>
